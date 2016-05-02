@@ -3,11 +3,31 @@ import * as THREE from 'three';
 
 import { Vector } from './vector';
 
+
+module.hot.accept();
+
 // solar data structures
 class ModuleType {
     constructor(size = new Vector(0, 0)) {
         this.size = size;
     }
+
+    geometry() {
+        const size = this.size;
+        const material = new THREE.LineBasicMaterial({ color: 0xffaa00, opacity: 1.0, linewidth: 1.0 });
+        const geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+        geometry.vertices.push(new THREE.Vector3(size.x, 0, 0));
+        geometry.vertices.push(new THREE.Vector3(size.x, 0, 0));
+        geometry.vertices.push(new THREE.Vector3(size.x, size.y, 0));
+        geometry.vertices.push(new THREE.Vector3(size.x, size.y, 0));
+        geometry.vertices.push(new THREE.Vector3(0, size.y, 0));
+        geometry.vertices.push(new THREE.Vector3(0, size.y, 0));
+        geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+
+        return { geometry, material };
+    }
+
 }
 
 class FieldModule {
@@ -70,22 +90,11 @@ function initGraphics(design) {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-    const testType = design.testType;
-    const testSegment = design.testSegment;
-
-    const material = new THREE.LineBasicMaterial({ color: 0xffaa00, opacity: 1.0, linewidth: 1.0 });
-    const geometry = new THREE.Geometry();
-    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-    geometry.vertices.push(new THREE.Vector3(testType.size.x, 0, 0));
-    geometry.vertices.push(new THREE.Vector3(testType.size.x, 0, 0));
-    geometry.vertices.push(new THREE.Vector3(testType.size.x, testType.size.y, 0));
-    geometry.vertices.push(new THREE.Vector3(testType.size.x, testType.size.y, 0));
-    geometry.vertices.push(new THREE.Vector3(0, testType.size.y, 0));
-    geometry.vertices.push(new THREE.Vector3(0, testType.size.y, 0));
-    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    const { moduleType, segment } = design;
+    const { geometry, material } = moduleType.geometry();
 
     // render modules
-    for (const module of testSegment.fieldModules) {
+    for (const module of segment.fieldModules) {
         const moduleInstance = new THREE.LineSegments(geometry, material);
         moduleInstance.position.x = module.position.x;
         moduleInstance.position.y = module.position.y;
@@ -96,11 +105,13 @@ function initGraphics(design) {
     const wiringGeometry = new THREE.Geometry();
 
     // render wiring
-    for (let i = 0; i < testSegment.wiring.length - 1; i++) {
-        const pt1 = testSegment.wiring[i].center();
-        const pt2 = testSegment.wiring[i + 1].center();
-        wiringGeometry.vertices.push(new THREE.Vector3(pt1.x, pt1.y, 0));
-        wiringGeometry.vertices.push(new THREE.Vector3(pt2.x, pt2.y, 0));
+    for (const wire of segment.wiring) {
+        for (let i = 0; i < wire.length - 1; i++) {
+            const pt1 = wire[i].center();
+            const pt2 = wire[i + 1].center();
+            wiringGeometry.vertices.push(new THREE.Vector3(pt1.x, pt1.y, 0));
+            wiringGeometry.vertices.push(new THREE.Vector3(pt2.x, pt2.y, 0));
+        }
     }
 
     const wiringInstance = new THREE.LineSegments(wiringGeometry, wiringMaterial);
@@ -131,33 +142,31 @@ function addBank(fieldSegment, moduleType, position, index, numHorizontal, numVe
     }
 }
 
-function initData() {
-    const testSegment = new FieldSegment();
-    const testType = new ModuleType(new Vector(1.0, 0.5));
-    // testSegment.fieldModules.push(new FieldModule(testType, new Vector(0, 0)));
-    addBank(testSegment, testType, new Vector(0, 0), 0, 12, 3);
-    addBank(testSegment, testType, new Vector(0, 5), 1, 12, 3);
-    addBank(testSegment, testType, new Vector(0, 10), 2, 12, 3);
+function initData({ stringSize = 12 } = {}) {
+    const segment = new FieldSegment();
+    const moduleType = new ModuleType(new Vector(1.0, 0.5));
+    // segment.fieldModules.push(new FieldModule(moduleType, new Vector(0, 0)));
+    addBank(segment, moduleType, new Vector(0, 0), 0, 12, 3);
+    addBank(segment, moduleType, new Vector(0, 5), 1, 12, 3);
+    addBank(segment, moduleType, new Vector(0, 10), 2, 12, 3);
 
-    const stringSize = 10;
-    testSegment.wiring = calculateWiringOrder(testSegment, stringSize);
+    segment.wiring = calculateWiringOrder(segment, stringSize);
 
-    return { testSegment, testType };
+    return { segment, moduleType };
 }
 
 function calculateWiringOrder(fieldSegment, stringSize = 1) {
     // TODO: fill out this function
     const wiring = [];
-    for (const module of _.shuffle(fieldSegment.fieldModules)) {
+    for (const module of _.identity(fieldSegment.fieldModules)) {
         wiring.push(module);
     }
 
-    return wiring;
+    return _.chunk(wiring, stringSize);
 }
 
 const design = initData();
+
 const renderContext = initGraphics(design);
 
 render(renderContext);
-
-module.hot.accept();
