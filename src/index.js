@@ -14,7 +14,7 @@ function render(renderContext) {
     renderContext.renderer.render(renderContext.scene, renderContext.camera);
 }
 
-function initGraphics({ module, segment, wiring }) {
+function initGraphics({ moduleModel, segment, wiring }) {
     const renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -33,7 +33,7 @@ function initGraphics({ module, segment, wiring }) {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 
-    const { geometry, material } = module.geometry();
+    const { geometry, material } = moduleModel.geometry();
 
     // render modules
     for (const fieldModule of segment.fieldModules) {
@@ -78,11 +78,12 @@ function calculateWiringOrder(fieldSegment, stringSize = 1) {
     return _.chunk(wiring, stringSize);
 }
 
-const { segment, module } = getScenario('three-racks');
+const { segment, moduleModel } = getScenario({ columns: 12, rows: 3, banks: 3 });
 const wiring = calculateWiringOrder(segment, 12);
 
-const renderContext = initGraphics({ segment, module, wiring });
+const renderContext = initGraphics({ segment, moduleModel, wiring });
+
 
 render(renderContext);
 
-module.hot.accept(); // eslint-disable-line
+module.hot.accept();

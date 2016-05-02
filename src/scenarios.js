@@ -77,19 +77,22 @@ function addBank(fieldSegment, module, position, index, numHorizontal, numVertic
 }
 
 
-function createSegment() {
+function createSegment(columns, rows, banks, rowSpacing = 4) {
     const segment = new FieldSegment();
-    const module = new Module(new Vector(1.0, 0.5));
+    const moduleModel = new Module(new Vector(1.0, 0.5));
 
-    addBank(segment, module, new Vector(0, 0), 0, 12, 3);
-    addBank(segment, module, new Vector(0, 5), 1, 12, 3);
-    addBank(segment, module, new Vector(0, 10), 2, 12, 3);
+    const heightVector = new Vector(0, moduleModel.size.y * rows + rowSpacing);
 
-    return { segment, module };
+    let start = new Vector(0, 0);
+
+    for (let bank = 0; bank < banks; bank += 1) {
+        addBank(segment, moduleModel, start, bank, columns, rows);
+        start = start.add(heightVector);
+    }
+
+    return { segment, moduleModel };
 }
 
-
-
-export function getScenario(scenarioName) {
-
+export function getScenario({ columns, rows, banks }) {
+    return createSegment(columns, rows, banks);
 }
