@@ -1,0 +1,20 @@
+{
+  "extends": "airbnb",
+  "globals": {
+    "jQuery": true,
+    "$": true,
+    "angular": true,
+    "lodash": true,
+    "_": true,
+    "paper": true
+  },
+  "parser": "babel-eslint",
+  "rules": {
+    "indent": [2, 4],
+    "id-length": [1, {"min": 2, "properties": "never", "exceptions": ["i", "j", "k", "x", "y", "z"]}],
+    "no-unused-vars": [2, {"args": "after-used", "argsIgnorePattern": "^_"}],
+    "max-len": [2, 120, 4],
+    "no-param-reassign": [2, { "props": false }],
+    "no-use-before-define": [2, { "functions": false, "classes": false }]
+  }
+}
