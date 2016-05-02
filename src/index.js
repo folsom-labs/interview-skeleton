@@ -57,7 +57,13 @@ function initGraphics(design) {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
+    const oldElement = document.getElementById('renderer');
+    if (oldElement) {
+        oldElement.parentNode.removeChild(oldElement);
+    }
+
     const container = document.createElement('div');
+    container.setAttribute('id', 'renderer');
     document.body.appendChild(container);
     container.appendChild(renderer.domElement);
 
@@ -142,7 +148,7 @@ function initData() {
 function calculateWiringOrder(fieldSegment, stringSize = 1) {
     // TODO: fill out this function
     const wiring = [];
-    for (const module of fieldSegment.fieldModules) {
+    for (const module of _.shuffle(fieldSegment.fieldModules)) {
         wiring.push(module);
     }
 
@@ -154,3 +160,4 @@ const renderContext = initGraphics(design);
 
 render(renderContext);
 
+module.hot.accept();
