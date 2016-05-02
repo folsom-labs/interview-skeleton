@@ -44,7 +44,7 @@ export class Keepout {}
 
 // rendering and interface
 function render(renderContext) {
-    requestAnimationFrame(render);
+    requestAnimationFrame(() => render(renderContext));
 
     renderContext.camera.lookAt(new THREE.Vector3(0, 0, -1));
     renderContext.camera.position.z = 25;
@@ -134,12 +134,12 @@ function initData() {
     addBank(testSegment, testType, new Vector(0, 10), 2, 12, 3);
 
     const stringSize = 10;
-    testSegment.wiring = calcuteWiringOrder(testSegment, stringSize);
+    testSegment.wiring = calculateWiringOrder(testSegment, stringSize);
 
     return { testSegment, testType };
 }
 
-function calcuteWiringOrder(fieldSegment, stringSize = 1) {
+function calculateWiringOrder(fieldSegment, stringSize = 1) {
     // TODO: fill out this function
     const wiring = [];
     for (const module of fieldSegment.fieldModules) {
