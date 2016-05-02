@@ -9,7 +9,10 @@ function render(renderContext) {
     requestAnimationFrame(() => render(renderContext));
 
     renderContext.camera.lookAt(new THREE.Vector3(0, 0, -1));
-    renderContext.camera.position.z = 25;
+
+    // renderContext.camera.position.x = 5;
+    // renderContext.camera.position.y = 5;
+    renderContext.camera.position.z = 15;
 
     renderContext.renderer.render(renderContext.scene, renderContext.camera);
 }
@@ -71,11 +74,29 @@ function initGraphics({ moduleModel, segment, wiring }) {
 function calculateWiringOrder(fieldSegment, stringSize = 1) {
     // TODO: fill out this function
     const wiring = [];
-    for (const module of _.identity(fieldSegment.fieldModules)) {
-        wiring.push(module);
+    for (const fieldModule of _.identity(fieldSegment.fieldModules)) {
+        wiring.push(fieldModule);
     }
 
-    return _.chunk(wiring, stringSize);
+    const wires = _.chunk(wiring, stringSize);
+
+    let totalDistance = 0;
+    for (const wire of wires) {
+        let lastModule = null;
+        let wireDistance = 0;
+        for (const fieldModule of wire) {
+            if (lastModule) {
+                wireDistance += fieldModule.position.distance(lastModule.position);
+            }
+            lastModule = fieldModule;
+        }
+        console.log("Wire Had Distance of", wireDistance); // eslint-disable-line
+        totalDistance += wireDistance;
+    }
+
+    console.log("Total Distance of", totalDistance); // eslint-disable-line
+
+    return wires;
 }
 
 const { segment, moduleModel } = getScenario({ columns: 12, rows: 3, banks: 3 });

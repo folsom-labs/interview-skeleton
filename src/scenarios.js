@@ -83,7 +83,7 @@ function createSegment(columns, rows, banks, rowSpacing = 4) {
 
     const heightVector = new Vector(0, moduleModel.size.y * rows + rowSpacing);
 
-    let start = new Vector(0, 0);
+    let start = new Vector(-5, -5);
 
     for (let bank = 0; bank < banks; bank += 1) {
         addBank(segment, moduleModel, start, bank, columns, rows);
