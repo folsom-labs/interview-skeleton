@@ -5,14 +5,11 @@ import { getScenario } from './scenarios';
 
 
 // rendering and interface
-function render(renderContext) {
+function render(renderContext, location = new THREE.Vector3(0, 0, 15)) {
     requestAnimationFrame(() => render(renderContext));
 
-    renderContext.camera.lookAt(new THREE.Vector3(0, 0, -1));
-
-    // renderContext.camera.position.x = 5;
-    // renderContext.camera.position.y = 5;
-    renderContext.camera.position.z = 15;
+    renderContext.camera.position.copy(location);
+    renderContext.camera.lookAt(location.setZ(0));
 
     renderContext.renderer.render(renderContext.scene, renderContext.camera);
 }
@@ -81,7 +78,7 @@ function calculateWiringOrder(fieldSegment, stringSize = 1) {
     const wires = _.chunk(wiring, stringSize);
 
     let totalDistance = 0;
-    for (const wire of wires) {
+    for (const [index, wire] of _.toPairs(wires)) {
         let lastModule = null;
         let wireDistance = 0;
         for (const fieldModule of wire) {
@@ -90,7 +87,7 @@ function calculateWiringOrder(fieldSegment, stringSize = 1) {
             }
             lastModule = fieldModule;
         }
-        console.log("Wire Had Distance of", wireDistance); // eslint-disable-line
+        console.log(`Wire ${index} Had Distance of `, wireDistance); // eslint-disable-line
         totalDistance += wireDistance;
     }
 
@@ -101,9 +98,7 @@ function calculateWiringOrder(fieldSegment, stringSize = 1) {
 
 const { segment, moduleModel } = getScenario({ columns: 12, rows: 3, banks: 3 });
 const wiring = calculateWiringOrder(segment, 12);
-
 const renderContext = initGraphics({ segment, moduleModel, wiring });
-
 
 render(renderContext);
 
