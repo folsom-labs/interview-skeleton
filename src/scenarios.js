@@ -68,7 +68,7 @@ function addBank(fieldSegment, module, position, index, numHorizontal, numVertic
     for (let i = 0; i < numVertical; i++) {
         for (let j = 0; j < numHorizontal; j++) {
             const newModule = new FieldModule(
-                module, position.add(new Vector(module.size.x * j, module.size.y * i), index, i, j)
+                module, position.add(new Vector(module.size.x * j, module.size.y * i)), index, i, j
             );
             fieldSegment.fieldModules.push(newModule);
             newBank.fieldModules.push(newModule);

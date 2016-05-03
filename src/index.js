@@ -3,6 +3,7 @@ import * as THREE from 'three';
 
 import { getScenario } from './scenarios';
 
+module.hot.accept();
 
 // rendering and interface
 function render(renderContext, location = new THREE.Vector3(0, 0, 15)) {
@@ -68,15 +69,23 @@ function initGraphics({ moduleModel, segment, wiring }) {
     return { scene, camera, renderer };
 }
 
-function calculateWiringOrder(fieldSegment, stringSize = 1) {
-    // TODO: fill out this function
-    const wiring = [];
-    for (const fieldModule of _.identity(fieldSegment.fieldModules)) {
-        wiring.push(fieldModule);
+function calculateWiringOrder(fieldSegment) {
+    const sortedModules = [];
+
+    for (const bank of fieldSegment.moduleBanks) {
+        sortedModules.push(...bank.fieldModules);
     }
 
-    const wires = _.chunk(wiring, stringSize);
+    return sortedModules;
+}
 
+function groupModules(sortedModules, stringSize) {
+    // TODO: fill out this function
+    return _.chunk(sortedModules, stringSize);
+}
+
+
+function logWireDistance(wires) {
     let totalDistance = 0;
     for (const [index, wire] of _.toPairs(wires)) {
         let lastModule = null;
@@ -92,14 +101,21 @@ function calculateWiringOrder(fieldSegment, stringSize = 1) {
     }
 
     console.log("Total Distance of", totalDistance); // eslint-disable-line
-
-    return wires;
 }
 
-const { segment, moduleModel } = getScenario({ columns: 12, rows: 3, banks: 3 });
-const wiring = calculateWiringOrder(segment, 12);
-const renderContext = initGraphics({ segment, moduleModel, wiring });
+const MAX_COLUMNS = 10;
+const MAX_ROWS = 2;
+const MAX_BANKS = 2;
 
-render(renderContext);
+const STRING_LENGTH = 12;
 
-module.hot.accept();
+(function main() {
+    const { segment, moduleModel } = getScenario({ columns: MAX_COLUMNS, rows: MAX_ROWS, banks: MAX_BANKS });
+    const sortedModules = calculateWiringOrder(segment);
+    const wiring = groupModules(sortedModules, STRING_LENGTH);
+    logWireDistance(wiring);
+    const renderContext = initGraphics({ segment, moduleModel, wiring });
+
+    render(renderContext);
+}());
+
