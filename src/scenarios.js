@@ -37,7 +37,9 @@ class ModuleBank {
 }
 
 class FieldSegment {
-    constructor() {
+    constructor(moduleModel) {
+        this.moduleModel = moduleModel;
+
         this.fieldModules = [];
         this.moduleBanks = [];
     }
@@ -61,15 +63,18 @@ export class Keepout {}
 
 
 // bassic segment setup
-function addBank(fieldSegment, module, position, index, numHorizontal, numVertical) {
-    const newBank = new ModuleBank(index, numVertical, numHorizontal);
+function addBank(fieldSegment, position, index, cols, rows) {
+    const newBank = new ModuleBank(index, rows, cols);
+    const module = fieldSegment.moduleModel;
+
     fieldSegment.moduleBanks.push(newBank);
 
-    for (let i = 0; i < numVertical; i++) {
-        for (let j = 0; j < numHorizontal; j++) {
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
             const newModule = new FieldModule(
-                module, position.add(new Vector(module.size.x * j, module.size.y * i)), index, i, j
+                module, position.add(new Vector(module.size.x * j, -module.size.y * i)), index, i, j
             );
+
             fieldSegment.fieldModules.push(newModule);
             newBank.fieldModules.push(newModule);
         }
@@ -77,22 +82,27 @@ function addBank(fieldSegment, module, position, index, numHorizontal, numVertic
 }
 
 
-function createSegment(columns, rows, banks, rowSpacing = 4) {
-    const segment = new FieldSegment();
-    const moduleModel = new Module(new Vector(1.0, 0.5));
-
-    const heightVector = new Vector(0, moduleModel.size.y * rows + rowSpacing);
-
-    let start = new Vector(-5, -5);
+function fillsegment(segment, columns, rows, banks, rowSpacing = 1.5, start = new Vector(-5, -5)) {
+    const moduleModel = segment.moduleModel;
+    const startOffset = new Vector(0, -(moduleModel.size.y * rows + rowSpacing));
 
     for (let bank = 0; bank < banks; bank += 1) {
-        addBank(segment, moduleModel, start, bank, columns, rows);
-        start = start.add(heightVector);
+        addBank(segment, start.add(startOffset.scale(bank)), bank, columns, rows);
     }
 
-    return { segment, moduleModel };
+    return { segment };
 }
 
-export function getScenario({ columns, rows, banks }) {
-    return createSegment(columns, rows, banks);
+
+function basicScenario({ columns, rows, banks }) {
+    const segment = new FieldSegment(new Module(new Vector(1.0, 0.5)));
+
+    return fillsegment(segment, columns, rows, banks);
 }
+
+
+export const SCENARIOS = [
+    basicScenario({ columns: 10, rows: 2, banks: 2 }),
+    basicScenario({ columns: 10, rows: 3, banks: 3 }),
+];
+

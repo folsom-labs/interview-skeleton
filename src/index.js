@@ -1,22 +1,22 @@
 import * as _ from 'lodash';
 import * as THREE from 'three';
 
-import { getScenario } from './scenarios';
+import { SCENARIOS } from './scenarios';
 
 module.hot.accept();
 
 // rendering and interface
-function render(renderContext, location = new THREE.Vector3(0, 0, 15)) {
-    requestAnimationFrame(() => render(renderContext));
-
+function render(renderContext, { location = new THREE.Vector3(0, -5, 10) } = {}) {
     renderContext.camera.position.copy(location);
     renderContext.camera.lookAt(location.setZ(0));
 
     renderContext.renderer.render(renderContext.scene, renderContext.camera);
 }
 
-function initGraphics({ moduleModel, segment, wiring }) {
+function initGraphics({ segment, wiring }) {
     const renderer = new THREE.WebGLRenderer({ antialias: false });
+    const moduleModel = segment.moduleModel;
+
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -72,6 +72,7 @@ function initGraphics({ moduleModel, segment, wiring }) {
 function calculateWiringOrder(fieldSegment) {
     const sortedModules = [];
 
+    // TODO: fill out this function
     for (const bank of fieldSegment.moduleBanks) {
         sortedModules.push(...bank.fieldModules);
     }
@@ -80,7 +81,6 @@ function calculateWiringOrder(fieldSegment) {
 }
 
 function groupModules(sortedModules, stringSize) {
-    // TODO: fill out this function
     return _.chunk(sortedModules, stringSize);
 }
 
@@ -96,26 +96,26 @@ function logWireDistance(wires) {
             }
             lastModule = fieldModule;
         }
-        console.log(`Wire ${index} Had Distance of `, wireDistance); // eslint-disable-line
+        console.log(`Wire ${index} Had Distance of ${wireDistance}`); // eslint-disable-line no-console
         totalDistance += wireDistance;
     }
 
-    console.log("Total Distance of", totalDistance); // eslint-disable-line
+    console.log(`Total Distance of ${totalDistance}`); // eslint-disable-line no-console
 }
 
-const MAX_COLUMNS = 10;
-const MAX_ROWS = 2;
-const MAX_BANKS = 2;
 
 const STRING_LENGTH = 12;
 
 (function main() {
-    const { segment, moduleModel } = getScenario({ columns: MAX_COLUMNS, rows: MAX_ROWS, banks: MAX_BANKS });
+    const { segment } = SCENARIOS[1];
+
+    // create module wiring–TODO: fix
     const sortedModules = calculateWiringOrder(segment);
     const wiring = groupModules(sortedModules, STRING_LENGTH);
     logWireDistance(wiring);
-    const renderContext = initGraphics({ segment, moduleModel, wiring });
 
-    render(renderContext);
+    const renderContext = initGraphics({ segment, wiring });
+
+    render(renderContext, { location: new THREE.Vector3(0, -10, 15) });
 }());
 
